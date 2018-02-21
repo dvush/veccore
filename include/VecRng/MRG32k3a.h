@@ -5,11 +5,11 @@
  * MRG32k3a: A SIMD/SIMT implementation of MRG32k3a based on RngStream.h(cpp)
  *
  * RngStream is a class generating multiple streams of random numbers created
- * by Prof. Pierre L'Ecuyer, University of Montreal (lecuyer@iro.umontreal.ca) 
+ * by Prof. Pierre L'Ecuyer, University of Montreal (lecuyer@iro.umontreal.ca)
  * Original source codes of RngStream.h(cpp) is available at
  * http://www.iro.umontreal.ca/~lecuyer/myftp/streams00/c++/
  *
- * Relevant articles in which MRG32k3a and the package with multiple streams 
+ * Relevant articles in which MRG32k3a and the package with multiple streams
  * were proposed:
  *
  * P. L'Ecuyer, ``Good Parameter Sets for Combined Multiple Recursive Random
@@ -34,7 +34,7 @@ inline namespace VECRNG_IMPL_NAMESPACE {
 template <typename BackendT>
 struct MRG32k3a_t {
   typename BackendT::Double_v fCg[MRG::vsize];
-}; 
+};
 
 //class MRG32k3a<BackendT>
 
@@ -45,10 +45,10 @@ private:
   static Real_t fSeed[MRG::vsize];
   typename BackendT::Double_v fBg[MRG::vsize];
 
-  // Information on a stream: The arrays {Cg, Bg, Ig} (from the RngStream) 
+  // Information on a stream: The arrays {Cg, Bg, Ig} (from the RngStream)
   // contain the current state of the stream, the starting state of the current
-  // SubStream, and the starting state of the stream (not used in this class). 
-  // The next seed will be the seed of the next declared RngStream. 
+  // SubStream, and the starting state of the stream (not used in this class).
+  // The next seed will be the seed of the next declared RngStream.
 
 public:
 
@@ -56,88 +56,88 @@ public:
   MRG32k3a() {}
 
   VECCORE_ATT_HOST_DEVICE
-  MRG32k3a(MRG32k3a_t<BackendT> *states) 
+  MRG32k3a(MRG32k3a_t<BackendT> *states)
     : VecRNG<MRG32k3a<BackendT>, BackendT, MRG32k3a_t<BackendT> >(states) {}
 
   VECCORE_ATT_HOST_DEVICE
   ~MRG32k3a() {}
 
   VECCORE_ATT_HOST_DEVICE
-  MRG32k3a(const MRG32k3a &rng); 
+  MRG32k3a(const MRG32k3a &rng);
 
   // Static methods
-  VECCORE_ATT_HOST 
-  VECCORE_FORCE_INLINE 
+  VECCORE_ATT_HOST
+  VECCORE_FORCE_INLINE
   void Initialize() { SetNextStream(); }
 
-  VECCORE_ATT_HOST 
+  VECCORE_ATT_HOST
   VECCORE_FORCE_INLINE
   void Initialize(MRG32k3a_t<BackendT> *states, int blocks, int threads);
 
-  // Returns pRNG<BackendT> between 0 and 1 
+  // Returns pRNG<BackendT> between 0 and 1
   template <typename ReturnTypeBackendT>
-  VECCORE_ATT_HOST_DEVICE 
+  VECCORE_ATT_HOST_DEVICE
   VECCORE_FORCE_INLINE
   typename ReturnTypeBackendT::Double_v Kernel(MRG32k3a_t<BackendT>& state);
 
   // Auxiliary methods
 
-  VECCORE_ATT_HOST_DEVICE 
+  VECCORE_ATT_HOST_DEVICE
   void SetSeed(Real_t seed[MRG::vsize]);
 
-  VECCORE_ATT_HOST_DEVICE 
+  VECCORE_ATT_HOST_DEVICE
   Real_t* GetSeed() const { return fSeed; }
 
-  VECCORE_ATT_HOST 
+  VECCORE_ATT_HOST
   void PrintState() const ;
 
 private:
-  
+
   // the mother is friend of this
   friend class VecRNG<MRG32k3a<BackendT>, BackendT, MRG32k3a_t<BackendT> >;
 
   // Set Stream to NextStream/NextSubStream.
-  VECCORE_ATT_HOST 
-  VECCORE_FORCE_INLINE 
+  VECCORE_ATT_HOST
+  VECCORE_FORCE_INLINE
   void SetNextStream();
 
   VECCORE_ATT_HOST
   VECCORE_FORCE_INLINE
   void SetNextSubstream();
 
-  // MRG32k3a utility methods 
-  VECCORE_ATT_HOST 
+  // MRG32k3a utility methods
+  VECCORE_ATT_HOST
   double MultModM(double a, double s, double c, double m);
 
-  VECCORE_ATT_HOST 
+  VECCORE_ATT_HOST
   void MatVecModM(const double A[MRG::ndim][MRG::ndim],
                   const double s[MRG::ndim], double v[MRG::ndim], double m);
-}; 
+};
 
 // The default seed of MRG32k3a
-template <class BackendT> 
+template <class BackendT>
 Real_t MRG32k3a<BackendT>::fSeed[MRG::vsize] = {12345., 12345., 12345., 12345., 12345., 12345.};
 
 //
 // Class Implementation
-//   
+//
 
 // Copy constructor
 template <typename BackendT>
 VECCORE_ATT_HOST_DEVICE
-MRG32k3a<BackendT>::MRG32k3a(const MRG32k3a<BackendT> &rng) 
+MRG32k3a<BackendT>::MRG32k3a(const MRG32k3a<BackendT> &rng)
   : VecRNG<MRG32k3a<BackendT>, BackendT, MRG32k3a_t<BackendT> >()
 {
   for(int i = 0 ; i < MRG::vsize ; ++i) {
     this->fState->fCg[i] = rng.fState->fCg[i];
-    fSeed[i] = rng.fSeed[i]; 
-    fBg[i] = rng.fBg[i]; 
+    fSeed[i] = rng.fSeed[i];
+    fBg[i] = rng.fBg[i];
   }
 }
 
 // Reset stream to the next Stream.
 template <typename BackendT>
-VECCORE_ATT_HOST 
+VECCORE_ATT_HOST
 VECCORE_FORCE_INLINE
 void MRG32k3a<BackendT>::SetNextStream()
 {
@@ -152,7 +152,7 @@ void MRG32k3a<BackendT>::SetNextStream()
 
 // Scalar specialization of SetNextStream
 template <>
-VECCORE_ATT_HOST 
+VECCORE_ATT_HOST
 VECCORE_FORCE_INLINE
 void MRG32k3a<ScalarBackend>::SetNextStream()
 {
@@ -165,7 +165,7 @@ void MRG32k3a<ScalarBackend>::SetNextStream()
 
 // Reset stream to the next substream.
 template <typename BackendT>
-VECCORE_ATT_HOST 
+VECCORE_ATT_HOST
 VECCORE_FORCE_INLINE
 void MRG32k3a<BackendT>::SetNextSubstream()
 {
@@ -191,14 +191,14 @@ void MRG32k3a<ScalarBackend>::SetNextSubstream()
   MatVecModM(MRG::A2p76, &fBg[3], &fBg[3], MRG::m2);
 }
 
-// Specialization for the scalar backend to initialize an arrary of states of which size is [blocks*threads]. 
+// Specialization for the scalar backend to initialize an arrary of states of which size is [blocks*threads].
 // "states" should be allocated beforehand, but can used for both host and device pointers
 template <>
-VECCORE_ATT_HOST 
+VECCORE_ATT_HOST
 VECCORE_FORCE_INLINE
 void MRG32k3a<ScalarBackend>::Initialize(MRG32k3a_t<ScalarBackend> *states, int blocks, int threads)
 {
-  MRG32k3a_t<ScalarBackend>* hstates 
+  MRG32k3a_t<ScalarBackend>* hstates
     = (MRG32k3a_t<ScalarBackend> *) malloc (blocks*threads*sizeof(MRG32k3a_t<ScalarBackend>));
 
   unsigned int nthreads = blocks * threads;
@@ -218,7 +218,7 @@ void MRG32k3a<ScalarBackend>::Initialize(MRG32k3a_t<ScalarBackend> *states, int 
 
 // Print information of the current state
 template <typename BackendT>
-VECCORE_ATT_HOST 
+VECCORE_ATT_HOST
 void MRG32k3a<BackendT>::PrintState() const
 {
   for(size_t j = 0 ; j < MRG::vsize ; ++j) {
@@ -228,37 +228,37 @@ void MRG32k3a<BackendT>::PrintState() const
 
 // Set the next seed
 template <typename BackendT>
-VECCORE_ATT_HOST_DEVICE 
-void MRG32k3a<BackendT>::SetSeed(Real_t seed[MRG::vsize]) 
-{ 
-  for(int i = 0 ; i < MRG::vsize ; ++i) fSeed[i] = seed[i]; 
+VECCORE_ATT_HOST_DEVICE
+void MRG32k3a<BackendT>::SetSeed(Real_t seed[MRG::vsize])
+{
+  for(int i = 0 ; i < MRG::vsize ; ++i) fSeed[i] = seed[i];
 }
 
 // Kernel to generate the next random number(s) with ReturnTypeBackendT (based on RngStream::U01d)
 template <class BackendT>
 template <class ReturnTypeBackendT>
-VECCORE_ATT_HOST_DEVICE 
+VECCORE_ATT_HOST_DEVICE
 VECCORE_FORCE_INLINE
-typename ReturnTypeBackendT::Double_v 
+typename ReturnTypeBackendT::Double_v
 MRG32k3a<BackendT>::Kernel(MRG32k3a_t<BackendT>& state)
 {
   using Double_v = typename ReturnTypeBackendT::Double_v;
   Double_v k, p1, p2;
 
-  // Component 1 
+  // Component 1
   p1 = MRG::a12 * state.fCg[1] - MRG::a13n * state.fCg[0];
 #if __CUDA_ARCH__ > 0
   k = trunc (fma (p1, MRG::rh1, p1 * MRG::rl1));
 #else
-  k = math::Floor (p1 / MRG::m1);  
+  k = math::Floor (p1 / MRG::m1);
 #endif
   p1 -= k * MRG::m1;
 
   Mask_v<Double_v> negative = (p1 < 0.);
-  MaskedAssign(p1, negative, p1 + MRG::m1); 
+  MaskedAssign(p1, negative, p1 + MRG::m1);
 
-  state.fCg[0] = state.fCg[1]; 
-  state.fCg[1] = state.fCg[2]; 
+  state.fCg[0] = state.fCg[1];
+  state.fCg[1] = state.fCg[2];
   state.fCg[2] = p1;
 
   p2 = MRG::a21 * state.fCg[5] - MRG::a23n * state.fCg[3];
@@ -270,13 +270,13 @@ MRG32k3a<BackendT>::Kernel(MRG32k3a_t<BackendT>& state)
   p2 -= k * MRG::m2;
 
   negative = (p2 < 0.);
-  MaskedAssign(p2, negative, p2 + MRG::m2); 
-  
+  MaskedAssign(p2, negative, p2 + MRG::m2);
+
   state.fCg[3] = state.fCg[4];
   state.fCg[4] = state.fCg[5];
   state.fCg[5] = p2;
 
-  // Combination 
+  // Combination
   return Blend((p1 > p2),(p1 - p2) * MRG::norm, (p1 - p2 + MRG::m1) * MRG::norm);
 
   // Extended (53 bits) precision
@@ -284,7 +284,7 @@ MRG32k3a<BackendT>::Kernel(MRG32k3a_t<BackendT>& state)
   // random *= (1.0 + MRG::fact);
   // return Blend((random < 1.0), random, random - 1.0);
 
-  // If necessary, the sepecialization for the scalar method of VectorBackend pRNG class can be 
+  // If necessary, the sepecialization for the scalar method of VectorBackend pRNG class can be
   // supported using the first stream of vector states, i.e.,  state.fCg[x] ==> state.fCg[0][x]
 }
 
@@ -298,10 +298,10 @@ VECCORE_ATT_HOST double MRG32k3a<BackendT>::MultModM (double a, double s, double
   v = a * s + c;
 
   if (v >= MRG::two53 || v <= -MRG::two53) {
-    a1 = static_cast<long> (a / MRG::two17); 
+    a1 = static_cast<long> (a / MRG::two17);
     a -= a1 * MRG::two17;
     v  = a1 * s;
-    a1 = static_cast<long> (v / m);     
+    a1 = static_cast<long> (v / m);
     v -= a1 * m;
     v = v * MRG::two17 + a * s + c;
   }
@@ -314,12 +314,12 @@ VECCORE_ATT_HOST double MRG32k3a<BackendT>::MultModM (double a, double s, double
 
 // Compute the vector v = A*s MOD m. Assume that -m < s[i] < m. Works also when v = s.
 template <class BackendT>
-VECCORE_ATT_HOST 
-void MRG32k3a<BackendT>::MatVecModM (const double A[MRG::ndim][MRG::ndim], const double s[MRG::ndim], 
+VECCORE_ATT_HOST
+void MRG32k3a<BackendT>::MatVecModM (const double A[MRG::ndim][MRG::ndim], const double s[MRG::ndim],
                                      double v[MRG::ndim], double m)
 {
   int i;
-  double x[MRG::ndim];  
+  double x[MRG::ndim];
 
   for (i = 0; i < MRG::ndim ; ++i) {
     x[i] = MultModM (A[i][0], s[0], 0.0, m);

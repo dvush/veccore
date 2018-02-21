@@ -5,11 +5,11 @@
   MRG: NameSpace for the MRG32k3a class based on RngStream.h(cpp)
 
   RngStream is a class generating multiple streams of random numbers created
-  by Prof. Pierre L'Ecuyer, University of Montreal (lecuyer@iro.umontreal.ca) 
+  by Prof. Pierre L'Ecuyer, University of Montreal (lecuyer@iro.umontreal.ca)
   Original source codes of RngStream.h(cpp) is available at
   http://www.iro.umontreal.ca/~lecuyer/myftp/streams00/c++/
 
-  Relevant articles in which MRG32k3a and the package with multiple streams 
+  Relevant articles in which MRG32k3a and the package with multiple streams
   were proposed:
 
   P. L'Ecuyer, ``Good Parameter Sets for Combined Multiple Recursive Random
@@ -29,7 +29,7 @@ namespace MRG {
 
   VECRNG_GLOBAL auto ndim    =   3;
   VECRNG_GLOBAL auto vsize   =   6;
-    
+
   VECRNG_GLOBAL double m1    =   4294967087.0;
   VECRNG_GLOBAL double m2    =   4294944443.0;
   VECRNG_GLOBAL double norm  =   1.0 / (m1 + 1.0);
@@ -39,7 +39,7 @@ namespace MRG {
   VECRNG_GLOBAL double a23n  =   1370589.0;
   VECRNG_GLOBAL double two17 =   131072.0;
   VECRNG_GLOBAL double two53 =   9007199254740992.0;
-  VECRNG_GLOBAL double fact  =   5.9604644775390625e-8;     // 1 / 2^24  
+  VECRNG_GLOBAL double fact  =   5.9604644775390625e-8;     // 1 / 2^24
 
 
   // The following are the transition matrices of the two MRG components
@@ -50,13 +50,13 @@ namespace MRG {
          {    3672831523.0,   69195019.0, 1871391091.0 },
          {    3672091415.0, 3528743235.0,   69195019.0 }
          };
-  
+
   VECRNG_GLOBAL double A2p76[ndim][ndim] = {
          {    1511326704.0, 3759209742.0, 1610795712.0 },
          {    4292754251.0, 1511326704.0, 3889917532.0 },
          {    3859662829.0, 4292754251.0, 3708466080.0 }
          };
-  
+
   VECRNG_GLOBAL double A1p127[ndim][ndim] = {
          {    2427906178.0, 3580155704.0,  949770784.0 },
          {     226153695.0, 1230515664.0, 3580155704.0 },
