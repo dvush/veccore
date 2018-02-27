@@ -33,6 +33,7 @@ inline namespace VECRNG_IMPL_NAMESPACE {
 
 template <typename BackendT>
 struct MRG32k3a_t {
+  // fCg[row=MRG::vsize][column=VectorSize<Double_v>()]
   typename BackendT::Double_v fCg[MRG::vsize];
 };
 
@@ -81,6 +82,9 @@ public:
   typename ReturnTypeBackendT::Double_v Kernel(MRG32k3a_t<BackendT>& state);
 
   // Auxiliary methods
+  VECCORE_ATT_HOST
+  VECCORE_FORCE_INLINE
+  void AdvanceState(long e, long c);
 
   VECCORE_ATT_HOST_DEVICE
   void SetSeed(Real_t seed[MRG::vsize]);
@@ -112,6 +116,19 @@ private:
   VECCORE_ATT_HOST
   void MatVecModM(const double A[MRG::ndim][MRG::ndim],
                   const double s[MRG::ndim], double v[MRG::ndim], double m);
+
+  VECCORE_ATT_HOST
+  void MatTwoPowModM(const double A[MRG::ndim][MRG::ndim], double B[MRG::ndim][MRG::ndim], double m, long e);
+
+  VECCORE_ATT_HOST
+  void MatPowModM(const double A[MRG::ndim][MRG::ndim], double B[MRG::ndim][MRG::ndim], double m, long n);
+
+  VECCORE_ATT_HOST
+  void MatMatModM (const double A[MRG::ndim][MRG::ndim], const double B[MRG::ndim][MRG::ndim], double C[MRG::ndim][MRG::ndim], double m);
+
+  VECCORE_ATT_HOST
+  void TransitionVector(double C1[MRG::ndim][MRG::ndim], double C2[MRG::ndim][MRG::ndim], double e, double c);
+
 };
 
 // The default seed of MRG32k3a
@@ -288,6 +305,80 @@ MRG32k3a<BackendT>::Kernel(MRG32k3a_t<BackendT>& state)
   // supported using the first stream of vector states, i.e.,  state.fCg[x] ==> state.fCg[0][x]
 }
 
+// Utility functions from RngSteam
+
+// if e > 0, let n = 2^e + c;
+// if e < 0, let n = -2^(-e) + c;
+// if e = 0, let n = c.
+// Jump n steps forward if n > 0, backwards if n < 0.
+template <class BackendT>
+VECCORE_FORCE_INLINE
+VECCORE_ATT_HOST void MRG32k3a<BackendT>::AdvanceState (long e, long c)
+{
+  double C1[MRG::ndim][MRG::ndim], C2[MRG::ndim][MRG::ndim];
+
+  TransitionVector(C1, C2, e, c);
+
+  double state[MRG::vsize];
+
+  for(size_t i = 0 ; i < VectorSize<Double_v>() ; ++i) {
+    // reshape transition input 
+    for (int j = 0; j < MRG::vsize ; ++j) {
+      state[j] = this->fState->fCg[j][i];
+    }
+
+    // advance the given state by (2^e + c) 
+    MatVecModM (C1, state, state, MRG::m1);
+    MatVecModM (C2, &state[3], &state[3], MRG::m2);
+
+    // put the state back to this->fState
+    for (int j = 0; j < MRG::vsize ; ++j) {
+       this->fState->fCg[j][i] = state[j];
+    }
+  }
+}
+
+template <>
+VECCORE_FORCE_INLINE
+VECCORE_ATT_HOST void MRG32k3a<ScalarBackend>::AdvanceState (long e, long c)
+{
+  double C1[MRG::ndim][MRG::ndim], C2[MRG::ndim][MRG::ndim];
+
+  TransitionVector(C1, C2, e, c);
+
+  MatVecModM (C1, this->fState->fCg, this->fState->fCg, MRG::m1);
+  MatVecModM (C2, &(this->fState->fCg[3]), &(this->fState->fCg[3]), MRG::m2);
+}
+
+template <class BackendT>
+VECCORE_ATT_HOST
+void MRG32k3a<BackendT>::TransitionVector(double C1[MRG::ndim][MRG::ndim], 
+                                          double C2[MRG::ndim][MRG::ndim], double e, double c)
+{
+  double B1[MRG::ndim][MRG::ndim], B2[MRG::ndim][MRG::ndim];
+
+  if (e > 0) {
+    MatTwoPowModM (MRG::A1p0, B1, MRG::m1, e);
+    MatTwoPowModM (MRG::A2p0, B2, MRG::m2, e);
+  } else if (e < 0) {
+    MatTwoPowModM (MRG::InvA1, B1, MRG::m1, -e);
+    MatTwoPowModM (MRG::InvA2, B2, MRG::m2, -e);
+  }
+
+  if (c >= 0) {
+    MatPowModM (MRG::A1p0, C1, MRG::m1, c);
+    MatPowModM (MRG::A2p0, C2, MRG::m2, c);
+  } else {
+      MatPowModM (MRG::InvA1, C1, MRG::m1, -c);
+      MatPowModM (MRG::InvA2, C2, MRG::m2, -c);
+  }
+
+  if (e) {
+    MatMatModM (B1, C1, C1, MRG::m1);
+    MatMatModM (B2, C2, C2, MRG::m2);
+  }
+}
+
 // Return (a*s + c) MOD m; a, s, c and m must be < 2^35
 template <class BackendT>
 VECCORE_ATT_HOST double MRG32k3a<BackendT>::MultModM (double a, double s, double c, double m)
@@ -315,18 +406,85 @@ VECCORE_ATT_HOST double MRG32k3a<BackendT>::MultModM (double a, double s, double
 // Compute the vector v = A*s MOD m. Assume that -m < s[i] < m. Works also when v = s.
 template <class BackendT>
 VECCORE_ATT_HOST
-void MRG32k3a<BackendT>::MatVecModM (const double A[MRG::ndim][MRG::ndim], const double s[MRG::ndim],
-                                     double v[MRG::ndim], double m)
+void MRG32k3a<BackendT>::MatVecModM (const double A[MRG::ndim][MRG::ndim], 
+                                     const double s[MRG::ndim], double v[MRG::ndim], double m)
 {
   int i;
-  double x[MRG::ndim];
+  // Necessary if v = s
+  double x[MRG::ndim]; 
 
   for (i = 0; i < MRG::ndim ; ++i) {
-    x[i] = MultModM (A[i][0], s[0], 0.0, m);
-    x[i] = MultModM (A[i][1], s[1], x[i], m);
-    x[i] = MultModM (A[i][2], s[2], x[i], m);
+      x[i] = MultModM (A[i][0], s[0], 0.0, m);
+      x[i] = MultModM (A[i][1], s[1], x[i], m);
+      x[i] = MultModM (A[i][2], s[2], x[i], m);
   }
   for (i = 0; i < MRG::ndim ; ++i) v[i] = x[i];
+
+}
+
+// Compute the matrix C = A*B MOD m. Assume that -m < s[i] < m.
+// Note: works also if A = C or B = C or A = B = C.
+template <class BackendT>
+VECCORE_ATT_HOST
+void MRG32k3a<BackendT>::MatMatModM (const double A[MRG::ndim][MRG::ndim], 
+                                     const double B[MRG::ndim][MRG::ndim],
+                                     double C[MRG::ndim][MRG::ndim], double m)
+{
+  int i, j;
+  double V[MRG::ndim], W[MRG::ndim][MRG::ndim];
+
+  for (i = 0; i < MRG::ndim ; ++i) {
+    for (j = 0; j < MRG::ndim ; ++j) V[j] = B[j][i];
+    MatVecModM (A, V, V, m);
+    for (j = 0; j < MRG::ndim ; ++j) W[j][i] = V[j];
+  }
+  for (i = 0; i < MRG::ndim ; ++i) {
+    for (j = 0; j < MRG::ndim ; ++j) C[i][j] = W[i][j];
+  }
+}
+
+// Compute the matrix B = (A^(2^e) Mod m);  works also if A = B. 
+template <class BackendT>
+VECCORE_ATT_HOST
+void MRG32k3a<BackendT>::MatTwoPowModM (const double A[MRG::ndim][MRG::ndim], 
+                                        double B[MRG::ndim][MRG::ndim], double m, long e)
+{
+   int i, j;
+
+   // Initialize: B = A
+   if (A != B) {
+     for (i = 0; i < MRG::ndim ; ++i) {
+       for (j = 0; j < MRG::ndim ; ++j) B[i][j] = A[i][j];
+     }
+   }
+   // Compute B = A^(2^e) mod m
+   for (i = 0; i < e; i++) MatMatModM (B, B, B, m);
+}
+
+// Compute the matrix B = (A^n Mod m);  works even if A = B.
+template <class BackendT>
+VECCORE_ATT_HOST
+void MRG32k3a<BackendT>::MatPowModM (const double A[MRG::ndim][MRG::ndim], 
+                                     double B[MRG::ndim][MRG::ndim], double m, long n)
+{
+  int i, j;
+  double W[MRG::ndim][MRG::ndim];
+
+  // initialize: W = A; B = I 
+  for (i = 0; i < MRG::ndim ; ++i) {
+    for (j = 0; j < MRG::ndim ; ++j) {
+      W[i][j] = A[i][j];
+      B[i][j] = 0.0;
+    }
+  }
+  for (j = 0; j < MRG::ndim ; ++j) B[j][j] = 1.0;
+
+  // Compute B = A^n mod m using the binary decomposition of n 
+  while (n > 0) {
+    if (n % 2) MatMatModM (W, B, B, m);
+    MatMatModM (W, W, W, m);
+    n /= 2;
+  }
 }
 
 } // end namespace impl

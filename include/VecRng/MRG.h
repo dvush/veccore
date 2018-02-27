@@ -68,6 +68,32 @@ namespace MRG {
          {    2824425944.0,   32183930.0, 2093834863.0 }
          };
 
+  VECRNG_GLOBAL double A1p0[MRG::ndim][MRG::ndim] = {
+         {       0.0,        1.0,       0.0 },
+         {       0.0,        0.0,       1.0 },
+         { -810728.0,  1403580.0,       0.0 }
+         };
+
+  VECRNG_GLOBAL double A2p0[MRG::ndim][MRG::ndim] = {
+         {        0.0,        1.0,       0.0 },
+         {        0.0,        0.0,       1.0 },
+         { -1370589.0,        0.0,  527612.0 }
+         };
+
+  // Inverse of A1p0
+  VECRNG_GLOBAL double InvA1[MRG::ndim][MRG::ndim] = {
+         { 184888585.0,   0.0,  1945170933.0 },
+         {         1.0,   0.0,           0.0 },
+         {         0.0,   1.0,           0.0 }
+         };
+
+  // Inverse of A2p0
+  VECRNG_GLOBAL double InvA2[MRG::ndim][MRG::ndim] = {
+         {      0.0,  360363334.0,  4225571728.0 },
+         {      1.0,          0.0,           0.0 },
+         {      0.0,          1.0,           0.0 }
+         };
+
   //parameters from curand_MRG32k3a
   VECRNG_GLOBAL double rh1 =  2.3283065498378290e-010;  /* (1.0 / m1)__hi */
   VECRNG_GLOBAL double rl1 = -1.7354913086174288e-026;  /* (1.0 / m1)__lo */
