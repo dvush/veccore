@@ -1,7 +1,7 @@
-#ifndef VECPHYS_BASE_GLOBAL_H_
-#define VECPHYS_BASE_GLOBAL_H_
+#ifndef RNGTEST_RNGTEST_H
+#define RNGTEST_RNGTEST_H
 
-#define VECPHYS
+#define RNGTEST
 
 #include <cstdio>
 
@@ -70,38 +70,28 @@ To Convert(const From& x)
 
 }
 
-#ifdef VECCORE_CUDA
-#include <cuda.h>
-#include <curand_kernel.h>
-typedef curandState Random_t;
-#else
-typedef int Random_t;
-#endif
-
-#include "Random.h"
-
-#define VECPHYS_NAMESPACE ::vecrng
+#define RNGTEST_NAMESPACE ::vecrng
 
 #if defined(VECCORE_CUDA)
-#define VECPHYS_IMPL_NAMESPACE cuda
+#define RNGTEST_IMPL_NAMESPACE cuda
 #else
-#define VECPHYS_IMPL_NAMESPACE cxx
+#define RNGTEST_IMPL_NAMESPACE cxx
 #endif
 
 #ifdef VECCORE_CUDA_DEVICE_COMPILATION
-#define VECPHYS_GLOBAL static __constant__ const
+#define RNGTEST_GLOBAL static __constant__ const
 #else
-#define VECPHYS_GLOBAL constexpr
+#define RNGTEST_GLOBAL constexpr
 #endif
 
 #define CLHEP vecrng // use CLHEP SystemOfUnits.h and PhysicalConstants.h
 
 #if defined(VECCORE_CUDA)
-#define VECPHYS_HOST_FORWARD_DECLARE(X)                                                                                \
+#define RNGTEST_HOST_FORWARD_DECLARE(X)                                                                                \
   namespace cxx {                                                                                                      \
   X                                                                                                                    \
   }
-#define VECPHYS_DEVICE_FORWARD_DECLARE(X)
+#define RNGTEST_DEVICE_FORWARD_DECLARE(X)
 #else
 // Not compiling with NVCC
 namespace vecrng {
@@ -123,11 +113,11 @@ struct kCudaType<int> {
 };
 }
 
-#define VECPHYS_HOST_FORWARD_DECLARE(X)
-#define VECPHYS_DEVICE_FORWARD_DECLARE(X)                                                                              \
+#define RNGTEST_HOST_FORWARD_DECLARE(X)
+#define RNGTEST_DEVICE_FORWARD_DECLARE(X)                                                                              \
   namespace cuda {                                                                                                     \
   X                                                                                                                    \
   }
 #endif
 
-#endif // VECPHYS_BASE_GLOBAL_H_
+#endif // RNGTEST_RNGTEST_H
