@@ -83,7 +83,8 @@ install(FILES cmake/FindUMESIMD.cmake DESTINATION ${VecCore_INSTALL_CMAKEDIR})
 install(DIRECTORY ${PROJECT_BINARY_DIR}/cmake/
   DESTINATION ${VecCore_INSTALL_CMAKEDIR} FILES_MATCHING PATTERN *.cmake)
 if (VECRNG)
-  install(DIRECTORY include/VecRng DESTINATION include)
+  install(DIRECTORY include/VecRng DESTINATION ${VecCore_INSTALL_INCLUDEDIR}
+    PATTERN "test" EXCLUDE)
 endif()
 
 enable_testing()
@@ -94,4 +95,8 @@ endif()
 
 if (BUILD_BENCHMARKS)
   add_subdirectory(bench)
+endif()
+
+if (BUILD_RNGTEST)
+  add_subdirectory(include/VecRng/test)
 endif()
