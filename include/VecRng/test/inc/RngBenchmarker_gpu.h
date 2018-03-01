@@ -1,0 +1,37 @@
+#ifndef RNG_BENCHMARKER_GPU_H
+#define RNG_BENCHMARKER_GPU_H 1
+
+#include "VecRng/MRG32k3a.h"
+#include "VecRng/Threefry.h"
+#include "VecRng/Philox.h"
+
+#include <curand_kernel.h>
+
+namespace vecrng {
+
+  // Cuda Wrapper
+  void CudaMRG32k3a(vecRng::MRG32k3a_t<vecRng::ScalarBackend> *devStates, double *result, 
+		    int nsample, int blocksPerGrid, int threadsPerBlock);
+
+  void CudaThreefry(vecRng::Threefry_t<vecRng::ScalarBackend> *devStates, double *result, 
+		    int nsample, int blocksPerGrid, int threadsPerBlock);
+
+  void CudaPhilox(vecRng::Philox_t<vecRng::ScalarBackend> *devStates, double *result, 
+		  int nsample, int blocksPerGrid, int threadsPerBlock);
+
+  // Curand Test 
+  void CurandMRG32k3a(curandStateMRG32k3a *devStates, double *result,
+		      int nsample, int blocksPerGrid, int threadsPerBlock);
+
+  void curand_setup_gpu(curandStateMRG32k3a* devStates, unsigned long seed,  
+                        int blocksPerGrid, int threadsPerBlock);
+
+  void CurandPhilox(curandStatePhilox4_32_10_t *devStates, double *result,
+                    int nsample, int blocksPerGrid, int threadsPerBlock);
+
+  void curand_setup_gpu(curandStatePhilox4_32_10_t* devStates, unsigned long seed,  
+                        int blocksPerGrid, int threadsPerBlock);
+
+} // end namespace vecrng
+
+#endif
