@@ -84,7 +84,6 @@ endif()
 
 # Find VecCore with selected components turned on (CUDA and backend)
 find_package(VecCore REQUIRED COMPONENTS ${VecCore_COMPONENTS})
-message("-- Found VecCore at: ${VecCore_ROOT_DIR}")
 
 include_directories(SYSTEM ${VecCore_INCLUDE_DIRS})
 set(RNGTEST_DEFINITIONS "${RNGTEST_DEFINITIONS} ${VecCore_DEFINITIONS}")
