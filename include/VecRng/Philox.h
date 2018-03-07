@@ -48,9 +48,9 @@ inline namespace VECRNG_IMPL_NAMESPACE {
 
 template <typename BackendT>
 struct Philox_t {
-  R123::array4_t<BackendT> ctr;
-  R123::array2_t<BackendT> key;
-  R123::array4_t<BackendT> ukey;
+  R123::array_t<BackendT,4> ctr;
+  R123::array_t<BackendT,2> key;
+  R123::array_t<BackendT,4> ukey;
   unsigned int index;
 }; 
 
@@ -114,11 +114,11 @@ private:
 
   VECCORE_ATT_HOST_DEVICE inline void Philox4x32bumpkey(R123::array2_t<BackendT> key);
 
-  VECCORE_ATT_HOST_DEVICE void Philox4x32round(R123::array4_t<BackendT> crt, 
-  					       R123::array2_t<BackendT> key);
+  VECCORE_ATT_HOST_DEVICE void Philox4x32round(R123::array_t<BackendT,4> crt, 
+  					       R123::array_t<BackendT,2> key);
 
-  VECCORE_ATT_HOST_DEVICE void Gen(R123::array4_t<BackendT> ctr, R123::array2_t<BackendT> key,
-                                   R123::array4_t<BackendT> out);
+  VECCORE_ATT_HOST_DEVICE void Gen(R123::array_t<BackendT,4> ctr, R123::array_t<BackendT,2> key,
+                                   R123::array_t<BackendT,4> out);
 
 };
 
@@ -349,7 +349,7 @@ VECCORE_ATT_HOST_DEVICE void Philox<BackendT>::Philox4x32bumpkey(R123::array2_t<
 template <>
 inline
 VECCORE_ATT_HOST_DEVICE void 
-Philox<ScalarBackend>::Philox4x32round(R123::array4_t<ScalarBackend> ctr, R123::array2_t<ScalarBackend> key)
+Philox<ScalarBackend>::Philox4x32round(R123::array_t<ScalarBackend,4> ctr, R123::array_t<ScalarBackend,2> key)
 {
   uint32_t hi0;                                                        
   uint32_t hi1;                                                        
@@ -367,7 +367,7 @@ Philox<ScalarBackend>::Philox4x32round(R123::array4_t<ScalarBackend> ctr, R123::
 template <class BackendT>
 inline
 VECCORE_ATT_HOST_DEVICE void 
-Philox<BackendT>::Philox4x32round(R123::array4_t<BackendT> ctr, R123::array2_t<BackendT> key)
+  Philox<BackendT>::Philox4x32round(R123::array_t<BackendT,4> ctr, R123::array_t<BackendT,2> key)
 {
   using UInt32_v = typename BackendT::UInt32_v;                              
 
@@ -386,8 +386,8 @@ Philox<BackendT>::Philox4x32round(R123::array4_t<BackendT> ctr, R123::array2_t<B
 
 
 template <class BackendT>
-VECCORE_ATT_HOST_DEVICE void Philox<BackendT>::Gen(R123::array4_t<BackendT> ctr, R123::array2_t<BackendT> key,
-                                                   R123::array4_t<BackendT> output)
+VECCORE_ATT_HOST_DEVICE void Philox<BackendT>::Gen(R123::array_t<BackendT,4> ctr, R123::array_t<BackendT,2> key,
+						     R123::array_t<BackendT,4> output)
 {
   // 10 rounds
   Philox4x32round(ctr, key); Philox4x32bumpkey(key);   
@@ -402,7 +402,7 @@ VECCORE_ATT_HOST_DEVICE void Philox<BackendT>::Gen(R123::array4_t<BackendT> ctr,
   Philox4x32round(ctr, key);
 
   //  return ctr;                                                         
-  for (int i=0;i < 4; i++) { 
+  for (int i = 0 ; i < 4 ; i++) { 
     output[i] = ctr[i];                                                         
   }
 }

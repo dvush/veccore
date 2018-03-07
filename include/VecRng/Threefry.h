@@ -41,17 +41,17 @@
 
 #include <limits.h>
 
-// struct Threefry_t (random state of Threefry-4x32-20)
-
 namespace vecRng {
 inline namespace VECRNG_IMPL_NAMESPACE {
+
+// struct Threefry_t (random state of Threefry-4x32-20)
 
 template <typename BackendT>
 struct Threefry_t {
   unsigned int index;
-  R123::array4_t<BackendT> ctr;
-  R123::array4_t<BackendT> key;
-  R123::array4_t<BackendT> ukey;
+  R123::array_t<BackendT,4> ctr;
+  R123::array_t<BackendT,4> key;
+  R123::array_t<BackendT,4> ukey;
 }; 
 
 //class Threefry<BackendT>
@@ -118,11 +118,11 @@ private:
   inline  typename BackendT::UInt64_v RotL_64(typename BackendT::UInt64_v x, unsigned int N);
 
   VECCORE_ATT_HOST_DEVICE
-  void BijectAndShuffle(R123::array4_t<BackendT> X, R123::array_t<BackendT,5> ks, 
+  void BijectAndShuffle(R123::array_t<BackendT,4> X, R123::array_t<BackendT,5> ks, 
                         unsigned int start, unsigned int index);
 
   VECCORE_ATT_HOST_DEVICE 
-  void Gen(R123::array4_t<BackendT> in, R123::array4_t<BackendT> k, R123::array4_t<BackendT> X);
+  void Gen(R123::array_t<BackendT,4> in, R123::array_t<BackendT,4> k, R123::array_t<BackendT,4> X);
 
 };
 
@@ -318,7 +318,7 @@ Threefry<BackendT>::RotL_64(typename BackendT::UInt64_v x, unsigned int N)
 
 template <class BackendT>
 VECCORE_ATT_HOST_DEVICE void 
-Threefry<BackendT>::BijectAndShuffle(R123::array4_t<BackendT> X, R123::array_t<BackendT,5> key, 
+Threefry<BackendT>::BijectAndShuffle(R123::array_t<BackendT,4> X, R123::array_t<BackendT,5> key, 
                                      unsigned int start, unsigned int index) 
 {
   X[0] += X[1]; X[1] = RotL_32(X[1],R123::R_32x4[start+0][0]); X[1] ^= X[0];
@@ -342,8 +342,8 @@ Threefry<BackendT>::BijectAndShuffle(R123::array4_t<BackendT> X, R123::array_t<B
 }  
 
 template <class BackendT>
-VECCORE_ATT_HOST_DEVICE void Threefry<BackendT>::Gen(R123::array4_t<BackendT> in, R123::array4_t<BackendT> k, 
-                                                     R123::array4_t<BackendT> X)
+VECCORE_ATT_HOST_DEVICE void Threefry<BackendT>::Gen(R123::array_t<BackendT,4> in, R123::array_t<BackendT,4> k, 
+						       R123::array_t<BackendT,4> X)
 {
   using UInt32_v = typename BackendT::UInt32_v;                              
 
