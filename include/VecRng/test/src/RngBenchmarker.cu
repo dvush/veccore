@@ -121,7 +121,7 @@ void RngBenchmarker::RunCuda()
         cudaMemcpy(result_h,result_d,theNBlocks*theNThreads*sizeof(double),
                 cudaMemcpyDeviceToHost);
          
-        for(int i = 0 ; i < theNBlocks*theNThreads ; ++i) rngEvent[k] += result_h[k]; 
+        for(int i = 0 ; i < theNBlocks*theNThreads ; ++i) rngEvent[k] += result_h[i]; 
         elapsedTotalTime += trialEventTime[r]; //ms
       }
     }
