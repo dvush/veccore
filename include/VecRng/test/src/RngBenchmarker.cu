@@ -30,8 +30,9 @@ void RngBenchmarker::RunCuda()
   cudaEventCreate (&stop);
 
   //set the default number of threads and thread blocks - should be setable
-  int theNBlocks  =   26;
-  int theNThreads =  192;
+  //theNThreads should be a power of 2 (due to reduction operations on GPU)
+  int theNBlocks  =   64;
+  int theNThreads =  256;
 
   //1. MRG32k3a:
 
@@ -67,9 +68,9 @@ void RngBenchmarker::RunCuda()
   double *result_c;
   double *result_d;
 
-  result_h = (double*) calloc(theNBlocks*theNThreads, sizeof(double));
-  result_c = (double*) calloc(theNBlocks*theNThreads, sizeof(double));
-  cudaMalloc((void**)&result_d,theNBlocks*theNThreads*sizeof(double));
+  result_h = (double*) calloc(theNBlocks, sizeof(double));
+  result_c = (double*) calloc(theNBlocks, sizeof(double));
+  cudaMalloc((void**)&result_d,theNBlocks*sizeof(double));
 
   float meanEventTime[kNumberRng +2];
   float sigmaEventTime[kNumberRng +2];
@@ -99,7 +100,7 @@ void RngBenchmarker::RunCuda()
 	  CudaMRG32k3a(statesMRG32k3a_d, result_d, fNSample, theNBlocks, theNThreads);
         }
 	if(k == 1) {
-     	  CudaThreefry(statesThreefry_d, result_d, fNSample, theNBlocks, theNThreads);
+	  CudaThreefry(statesThreefry_d, result_d, fNSample, theNBlocks, theNThreads);
 	}
 	if(k == 2) {
 	  CudaPhilox(statesPhilox_d, result_d, fNSample, theNBlocks, theNThreads);
@@ -118,10 +119,11 @@ void RngBenchmarker::RunCuda()
         cudaEventElapsedTime (&trialEventTime[r],start,stop);
 
         //copy the result for varification
-        cudaMemcpy(result_h,result_d,theNBlocks*theNThreads*sizeof(double),
-                cudaMemcpyDeviceToHost);
+        cudaMemcpy(result_h,result_d,theNBlocks*sizeof(double),cudaMemcpyDeviceToHost);
          
-        for(int i = 0 ; i < theNBlocks*theNThreads ; ++i) rngEvent[k] += result_h[i]; 
+        for(int i = 0 ; i < theNBlocks ; ++i) {
+          rngEvent[k] += result_h[i]; 
+        }
         elapsedTotalTime += trialEventTime[r]; //ms
       }
     }
