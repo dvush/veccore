@@ -33,7 +33,7 @@ public:
 
   // Dummy Constructor for SIMT
   VECCORE_ATT_HOST_DEVICE
-  VecRNG(RandomT *devState) {}
+  VecRNG(RandomT *devState) { fState = devState; }
 
   VECCORE_ATT_HOST_DEVICE
 #ifndef VECCORE_CUDA
