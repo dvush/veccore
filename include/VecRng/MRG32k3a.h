@@ -66,11 +66,19 @@ public:
   VECCORE_ATT_HOST_DEVICE
   MRG32k3a(const MRG32k3a &rng);
 
-  // Static methods
+  // Mandatory methods - static inheritance
+
+  // Default initialization - automatic skipping to the next stream
   VECCORE_ATT_HOST
   VECCORE_FORCE_INLINE
   void Initialize() { SetNextStream(); }
 
+  // Initialize with a unique stream number
+  VECCORE_ATT_HOST
+  VECCORE_FORCE_INLINE
+  void Initialize(long streamId);
+
+  // Initialize a set of states of which size is equivalent to blocks*threads
   VECCORE_ATT_HOST
   VECCORE_FORCE_INLINE
   void Initialize(MRG32k3a_t<BackendT> *states, int blocks, int threads);
@@ -208,6 +216,22 @@ void MRG32k3a<ScalarBackend>::SetNextSubstream()
   MatVecModM(MRG::A2p76, &fBg[3], &fBg[3], MRG::m2);
 }
 
+template <typename BackendT>
+VECCORE_ATT_HOST
+VECCORE_FORCE_INLINE
+void MRG32k3a<BackendT>::Initialize(long streamId)
+{
+  //start from the default state  
+  for(int i = 0 ; i <  MRG::vsize ; ++i) fSeed[i] = 12345.;
+
+  //reset the state to the biginning of the first stream
+  Initialize();
+
+  //skip-ahead by (the stream number)*(the size of stream length in powers of 2)
+  long e = streamId*MRG::slength;
+  AdvanceState(e,0);
+}
+ 
 // Specialization for the scalar backend to initialize an arrary of states of which size is [blocks*threads].
 // "states" should be allocated beforehand, but can used for both host and device pointers
 template <>

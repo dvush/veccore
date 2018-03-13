@@ -52,6 +52,11 @@ public:
   void Initialize()
   { static_cast<DerivedT *>(this)->template Initialize<BackendT>(); }
 
+  // Initialization with a unique stream number
+  VECCORE_ATT_HOST
+  void Initialize(long streamId)
+  { static_cast<DerivedT *>(this)->template Initialize<BackendT>(streamId); }
+
   // Initialization for SIMT
   VECCORE_ATT_HOST
   void Initialize(RandomT *states, int blocks, int threads)

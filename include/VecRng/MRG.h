@@ -29,6 +29,7 @@ namespace MRG {
 
   VECRNG_GLOBAL auto ndim    =   3;
   VECRNG_GLOBAL auto vsize   =   6;
+  VECRNG_GLOBAL auto slength =  127; //stream length in powers of two: 2^127
 
   VECRNG_GLOBAL double m1    =   4294967087.0;
   VECRNG_GLOBAL double m2    =   4294944443.0;
