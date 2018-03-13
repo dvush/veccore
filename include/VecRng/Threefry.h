@@ -76,19 +76,32 @@ public:
   VECCORE_ATT_HOST_DEVICE
   Threefry(const Threefry &rng); 
 
-  // Static methods
+  // Mandatory methods - static inheritance
 
-  inline VECCORE_ATT_HOST void Initialize();
+  VECCORE_ATT_HOST
+  VECCORE_FORCE_INLINE
+  void Initialize();
+
+  // Initialize with a unique stream number
+  VECCORE_ATT_HOST
+  VECCORE_FORCE_INLINE
+  void Initialize(long streamId);
 
   //Initialize a set of states of which size is equivalent to blocks*threads
-  inline VECCORE_ATT_HOST void Initialize(Threefry_t<BackendT> *states, int blocks, int threads);
+  VECCORE_ATT_HOST
+  VECCORE_FORCE_INLINE
+  void Initialize(Threefry_t<BackendT> *states, int blocks, int threads);
 
   // Returns pRNG<BackendT> between 0 and 1 (excluding the end points).
   template <typename ReturnTypeBackendT>
   inline VECCORE_ATT_HOST_DEVICE typename ReturnTypeBackendT::Double_v Kernel(Threefry_t<BackendT>& state);
 
   // Auxiliary methods
-
+  
+  VECCORE_ATT_HOST
+  VECCORE_FORCE_INLINE
+  void AdvanceState(long long n);
+  
   VECCORE_ATT_HOST_DEVICE void SetSeed(long long seed) { fSeed = seed; }
 
   VECCORE_ATT_HOST_DEVICE long long GetSeed() const { return fSeed; }
@@ -157,7 +170,7 @@ VECCORE_ATT_HOST inline void Threefry<BackendT>::SetNextStream (Threefry_t<Backe
     for(size_t j = 0 ; j < 4 ; ++j) state->ctr[j][i] = 0;
     state->key[0][i] = (unsigned int)(fSeed);
     state->key[1][i] = (unsigned int)(fSeed>>32);
-    
+    ++fSeed;
   }
 }
 
@@ -168,6 +181,7 @@ VECCORE_ATT_HOST inline void Threefry<ScalarBackend>::SetNextStream (Threefry_t<
   for(size_t i = 0 ; i < 4 ; ++i) state->ctr[i] = 0;
   state->key[0] = (unsigned int)(fSeed);
   state->key[1] = (unsigned int)(fSeed>>32);
+  ++fSeed;
 }
 
 // Reset the current stream to the next substream - skipahead 
@@ -211,9 +225,42 @@ VECCORE_ATT_HOST inline void Threefry<BackendT>::Initialize()
   //set initial counter and key
   this->fState->index = 0;
   SetNextStream(this->fState);
-  ++fSeed;
 }
 
+template <typename BackendT>
+VECCORE_ATT_HOST
+VECCORE_FORCE_INLINE
+void Threefry<BackendT>::Initialize(long streamId)
+{
+  this->fState->index = 0;
+
+  //start from the default state and skip to the streamId stream
+  fSeed = 12345 + streamId*VectorSize<UInt32_v>();
+
+  for(size_t i = 0 ; i < VectorSize<UInt32_v>() ; ++i) { 
+    for(size_t j = 0 ; j < 4 ; ++j) this->fState->ctr[j][i] = 0;
+    this->fState->key[0][i] = (unsigned int)(fSeed);
+    this->fState->key[1][i] = (unsigned int)(fSeed>>32);
+    ++fSeed;
+  }
+}
+
+template <>
+VECCORE_ATT_HOST
+VECCORE_FORCE_INLINE
+void Threefry<ScalarBackend>::Initialize(long streamId)
+{
+  this->fState->index = 0;
+  
+  //start from the default state and skip to the streamId-th stream
+  fSeed = 12345 + streamId;
+
+  for(size_t j = 0 ; j < 4 ; ++j) this->fState->ctr[j] = 0;
+  this->fState->key[0] = (unsigned int)(fSeed);
+  this->fState->key[1] = (unsigned int)(fSeed>>32);
+  ++fSeed;
+}
+ 
 // Specialization of Initialize for SIMT
 template <>
 VECCORE_ATT_HOST inline void Threefry<ScalarBackend>::Initialize(Threefry_t<ScalarBackend> *states, 
@@ -273,6 +320,38 @@ VECCORE_ATT_HOST void Threefry<BackendT>::PrintState() const
   }
 }
 
+template <class BackendT>
+VECCORE_FORCE_INLINE
+VECCORE_ATT_HOST void Threefry<BackendT>::AdvanceState(long long n)
+{
+  unsigned int nlo = (unsigned int)(n);
+  unsigned int nhi = (unsigned int)(n>>32);
+
+  for(size_t i = 0 ; i < VectorSize<UInt32_v>() ; ++i) { 
+    this->fState->ctr[0][i] += nlo;
+    if(this->fState->ctr[0][i]) nhi++;
+    this->fState->ctr[1][i] += nhi;
+    if(nhi <= this->fState->ctr[1][i]) return;
+    if(++(this->fState->ctr[2][i])) return;
+    ++(this->fState->ctr[3][i]);
+  }
+}
+
+template <>
+VECCORE_FORCE_INLINE
+VECCORE_ATT_HOST void Threefry<ScalarBackend>::AdvanceState(long long n)
+{
+  unsigned int nlo = (unsigned int)(n);
+  unsigned int nhi = (unsigned int)(n>>32);
+
+  this->fState->ctr[0] += nlo;
+  if(this->fState->ctr[0]) nhi++;
+  this->fState->ctr[1] += nhi;
+  if(nhi <= this->fState->ctr[1]) return;
+  if(++(this->fState->ctr[2])) return;
+  ++(this->fState->ctr[3]);
+}
+  
 // Kernel to generate a vector(scalar) of next random number(s) 
 template <class BackendT>
 template <class ReturnTypeBackendT>
