@@ -300,10 +300,25 @@ MRG32k3a<BackendT>::Kernel(MRG32k3a_t<BackendT>& state)
   // Double_v random =  Blend((p1 > p2),(p1 - p2) * MRG::norm, (p1 - p2 + MRG::m1) * MRG::norm);
   // random *= (1.0 + MRG::fact);
   // return Blend((random < 1.0), random, random - 1.0);
-
-  // If necessary, the sepecialization for the scalar method of VectorBackend pRNG class can be
-  // supported using the first stream of vector states, i.e.,  state.fCg[x] ==> state.fCg[0][x]
 }
+
+// Sepecialization for the scalar method of VectorBackend pRNG class
+#ifndef VECCORE_CUDA
+template <>
+template <>
+VECCORE_FORCE_INLINE
+VECCORE_ATT_HOST_DEVICE
+ScalarBackend::Double_v
+MRG32k3a<VectorBackend>::Kernel<ScalarBackend>(MRG32k3a_t<VectorBackend>& state)
+{
+  // Return the sequence of the first sub-stream of vector backend. 
+  // If the efficiency of this specialization matters, implement the 
+  // corresponding scalar method using the first state of vector states, 
+  // state.fCg[x], i.e., state.fCg[0][x]
+
+  return Kernel<VectorBackend>(state)[0];
+}  
+#endif
 
 // Utility functions from RngSteam
 

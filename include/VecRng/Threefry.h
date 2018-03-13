@@ -301,6 +301,18 @@ VECCORE_ATT_HOST_DEVICE typename ReturnTypeBackendT::Double_v Threefry<BackendT>
   return u;
 }
 
+// Sepecialization for the scalar method of VectorBackend pRNG class
+#ifndef VECCORE_CUDA
+template <>
+template <>
+VECCORE_FORCE_INLINE
+VECCORE_ATT_HOST_DEVICE ScalarBackend::Double_v 
+Threefry<VectorBackend>::Kernel<ScalarBackend>(Threefry_t<VectorBackend>& state)
+{
+  return Kernel<VectorBackend>(state)[0]; 
+}
+#endif
+
 // Threefry utility methods
 template <class BackendT>
 inline VECCORE_ATT_HOST_DEVICE typename BackendT::UInt32_v 

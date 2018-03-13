@@ -295,6 +295,18 @@ typename ReturnTypeBackendT::Double_v Philox<BackendT>::Kernel(Philox_t<BackendT
   return u;
 }
 
+// Sepecialization for the scalar method of VectorBackend pRNG class
+#ifndef VECCORE_CUDA
+template <>
+template <>
+VECCORE_FORCE_INLINE
+VECCORE_ATT_HOST_DEVICE ScalarBackend::Double_v 
+Philox<VectorBackend>::Kernel<ScalarBackend>(Philox_t<VectorBackend>& state)
+{
+  return Kernel<VectorBackend>(state)[0]; 
+}
+#endif
+
 // Philox utility methods
 template <class BackendT>
 inline
