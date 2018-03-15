@@ -85,10 +85,10 @@ public:
   VECCORE_FORCE_INLINE
   void Initialize(long streamId);
   
-  // Initialize a set of states of which size is equivalent to blocks*threads
+  // Initialize a set of states of which size is nthreads
   VECCORE_ATT_HOST
   VECCORE_FORCE_INLINE
-  void Initialize(Philox_t<BackendT> *states, int blocks, int threads);
+  void Initialize(Philox_t<BackendT> *states, unsigned int nthreads);
   
   // Returns pRNG<BackendT> between 0 and 1 (excluding the end points).
   template <typename ReturnTypeBackendT>
@@ -254,13 +254,12 @@ void Philox<ScalarBackend>::Initialize(long streamId)
  
 // Specialization of Initialize for SIMT
 template <>
-inline VECCORE_ATT_HOST void Philox<ScalarBackend>::Initialize(Philox_t<ScalarBackend> *states, 
-                                                               int blocks, int threads)
+VECCORE_ATT_HOST 
+VECCORE_FORCE_INLINE
+void Philox<ScalarBackend>::Initialize(Philox_t<ScalarBackend> *states, unsigned int nthreads)
 {
   Philox_t<ScalarBackend>* hstates 
-   = (Philox_t<ScalarBackend> *) malloc (blocks*threads*sizeof(Philox_t<ScalarBackend>));
-
-  unsigned int nthreads = blocks * threads;
+   = (Philox_t<ScalarBackend> *) malloc (nthreads*sizeof(Philox_t<ScalarBackend>));
 
   for (unsigned int tid = 0 ; tid < nthreads ; ++tid) {
     //initialize initial seed/state by the unique tid number

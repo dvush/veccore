@@ -59,8 +59,8 @@ public:
 
   // Initialization for SIMT
   VECCORE_ATT_HOST
-  void Initialize(RandomT *states, int blocks, int threads)
-  { static_cast<DerivedT *>(this)->template Initialize<BackendT>(states,blocks,threads); }
+  void Initialize(RandomT *states, unsigned int nthreads)
+  { static_cast<DerivedT *>(this)->template Initialize<BackendT>(states, nthreads); }
 
   // Return ReturnTypeBackendT::Double_v of random numbers in [0,1)
   template <typename ReturnTypeBackendT>

@@ -87,10 +87,10 @@ public:
   VECCORE_FORCE_INLINE
   void Initialize(long streamId);
 
-  //Initialize a set of states of which size is equivalent to blocks*threads
+  //Initialize a set of states of which size is nthreads
   VECCORE_ATT_HOST
   VECCORE_FORCE_INLINE
-  void Initialize(Threefry_t<BackendT> *states, int blocks, int threads);
+  void Initialize(Threefry_t<BackendT> *states, unsigned int nthreads);
 
   // Returns pRNG<BackendT> between 0 and 1 (excluding the end points).
   template <typename ReturnTypeBackendT>
@@ -263,14 +263,14 @@ void Threefry<ScalarBackend>::Initialize(long streamId)
  
 // Specialization of Initialize for SIMT
 template <>
-VECCORE_ATT_HOST inline void Threefry<ScalarBackend>::Initialize(Threefry_t<ScalarBackend> *states, 
-                                                                     int blocks, int threads)
+VECCORE_ATT_HOST
+VECCORE_FORCE_INLINE
+void Threefry<ScalarBackend>::Initialize(Threefry_t<ScalarBackend> *states, unsigned int nthreads)
 {
   
   Threefry_t<ScalarBackend>* hstates 
-    = (Threefry_t<ScalarBackend> *) malloc (blocks*threads*sizeof(Threefry_t<ScalarBackend>));
+    = (Threefry_t<ScalarBackend> *) malloc (nthreads*sizeof(Threefry_t<ScalarBackend>));
 
-  unsigned int nthreads = blocks * threads;
   for (unsigned int tid = 0 ; tid < nthreads ; ++tid) {
     //initialize initial seed/state by the unique tid number
     hstates[tid].index = 0; 

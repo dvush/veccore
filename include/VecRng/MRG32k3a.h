@@ -78,10 +78,10 @@ public:
   VECCORE_FORCE_INLINE
   void Initialize(long streamId);
 
-  // Initialize a set of states of which size is equivalent to blocks*threads
+  // Initialize a set of states of which size is nthreads
   VECCORE_ATT_HOST
   VECCORE_FORCE_INLINE
-  void Initialize(MRG32k3a_t<BackendT> *states, int blocks, int threads);
+  void Initialize(MRG32k3a_t<BackendT> *states, unsigned int nthreads);
 
   // Returns pRNG<BackendT> between 0 and 1
   template <typename ReturnTypeBackendT>
@@ -232,17 +232,16 @@ void MRG32k3a<BackendT>::Initialize(long streamId)
   AdvanceState(e,0);
 }
  
-// Specialization for the scalar backend to initialize an arrary of states of which size is [blocks*threads].
-// "states" should be allocated beforehand, but can used for both host and device pointers
+// Specialization for the scalar backend to initialize an arrary of states of which size is threads.
+// "states" should be allocated beforehand, but can be used for both host and device pointers
 template <>
 VECCORE_ATT_HOST
 VECCORE_FORCE_INLINE
-void MRG32k3a<ScalarBackend>::Initialize(MRG32k3a_t<ScalarBackend> *states, int blocks, int threads)
+void MRG32k3a<ScalarBackend>::Initialize(MRG32k3a_t<ScalarBackend> *states, unsigned int nthreads)
 {
   MRG32k3a_t<ScalarBackend>* hstates
-    = (MRG32k3a_t<ScalarBackend> *) malloc (blocks*threads*sizeof(MRG32k3a_t<ScalarBackend>));
+    = (MRG32k3a_t<ScalarBackend> *) malloc (nthreads*sizeof(MRG32k3a_t<ScalarBackend>));
 
-  unsigned int nthreads = blocks * threads;
   for (unsigned int tid = 0 ; tid < nthreads ; ++tid) {
     SetNextStream();
     for(size_t j = 0 ; j < MRG::vsize ; ++j) {
