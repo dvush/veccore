@@ -259,6 +259,9 @@ include_directories(${PROJECT_SOURCE_DIR} inc)
 set(SRC_CPP_RELATIVE
   src/RngBenchmarker.cc
   src/RngBenchmarker_cpu.cc
+
+  src/PdfBenchmarker.cc
+  src/PdfBenchmarker_cpu.cc
 )
 
 if (RNGTEST_CUDA)
@@ -284,6 +287,9 @@ if (RNGTEST_CUDA)
   set(SRC_CUDA ${SRC_CUDA}
     src/RngBenchmarker.cu
     src/RngBenchmarker_gpu.cu
+
+    src/PdfBenchmarker.cu
+    src/PdfBenchmarker_gpu.cu
   )
 endif()
 
@@ -339,6 +345,7 @@ endif()
 # Define executables
 set(TEST_EXECUTABLES
   ${PROJECT_SOURCE_DIR}/src/RngBenchmark.cc
+  ${PROJECT_SOURCE_DIR}/src/PdfBenchmark.cc
 )
 
 # Build executables
