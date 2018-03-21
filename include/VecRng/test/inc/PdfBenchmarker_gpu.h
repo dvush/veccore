@@ -8,7 +8,7 @@
 namespace vecrng {
 
   // Cuda Wrapper
-  void CudaMRG32k3aGauss(vecRng::MRG32k3a_t<vecRng::ScalarBackend> *devStates, double *result, 
+  void CudaMRG32k3aGauss(vecRng::MRG32k3a<vecRng::ScalarBackend>::State_t *devStates, double *result, 
 		    int nsample, int blocksPerGrid, int threadsPerBlock);
 
   // Curand Test 

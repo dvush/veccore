@@ -37,8 +37,8 @@ void PdfBenchmarker::RunCuda()
   //1. MRG32k3a:
 
   vecRng::MRG32k3a<vecRng::ScalarBackend> *mrg32k2a = new vecRng::MRG32k3a<vecRng::ScalarBackend>();
-  vecRng::MRG32k3a_t<vecRng::ScalarBackend>* statesMRG32k3a_d = 0; 
-  cudaMalloc((void**)&statesMRG32k3a_d, theNBlocks*theNThreads*sizeof(vecRng::MRG32k3a_t<vecRng::ScalarBackend>));
+  vecRng::MRG32k3a<vecRng::ScalarBackend>::State_t* statesMRG32k3a_d = 0; 
+  cudaMalloc((void**)&statesMRG32k3a_d, theNBlocks*theNThreads*sizeof(vecRng::MRG32k3a<vecRng::ScalarBackend>::State_t));
   mrg32k2a->Initialize(statesMRG32k3a_d, theNBlocks*theNThreads);
 
   //4 curandStateMRG32k3a

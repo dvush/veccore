@@ -21,7 +21,7 @@ const int THREADS_PER_BLOCK = 256;
 } 
 
 __global__
-void KernelMRG32k3a(vecRng::MRG32k3a_t<vecRng::ScalarBackend>* devStates, double *result, int nsample) 
+void KernelMRG32k3a(vecRng::MRG32k3a<vecRng::ScalarBackend>::State_t* devStates, double *result, int nsample) 
 {
   unsigned int tid = threadIdx.x + blockIdx.x * blockDim.x;
   unsigned int sid = threadIdx.x;
@@ -42,7 +42,7 @@ void KernelMRG32k3a(vecRng::MRG32k3a_t<vecRng::ScalarBackend>* devStates, double
 }
 
 __global__
-void KernelThreefry(vecRng::Threefry_t<vecRng::ScalarBackend>* devStates, double *result, int nsample) 
+void KernelThreefry(vecRng::Threefry<vecRng::ScalarBackend>::State_t* devStates, double *result, int nsample) 
 {
   unsigned int tid = threadIdx.x + blockIdx.x * blockDim.x;
   unsigned int sid = threadIdx.x;
@@ -63,7 +63,7 @@ void KernelThreefry(vecRng::Threefry_t<vecRng::ScalarBackend>* devStates, double
 }
 
 __global__
-void KernelPhilox(vecRng::Philox_t<vecRng::ScalarBackend>* devStates, double *result, int nsample) 
+void KernelPhilox(vecRng::Philox<vecRng::ScalarBackend>::State_t* devStates, double *result, int nsample) 
 {
   unsigned int tid = threadIdx.x + blockIdx.x * blockDim.x;
   unsigned int sid = threadIdx.x;
@@ -152,7 +152,7 @@ void curand_setup_kernel(curandStatePhilox4_32_10_t *devStates, unsigned long se
 
 // Cuda wrapper
 
-void CudaMRG32k3a(vecRng::MRG32k3a_t<vecRng::ScalarBackend> *devStates,
+void CudaMRG32k3a(vecRng::MRG32k3a<vecRng::ScalarBackend>::State_t *devStates,
 		  double *result,
  		  int nsample,
                   int blocksPerGrid, 
@@ -161,7 +161,7 @@ void CudaMRG32k3a(vecRng::MRG32k3a_t<vecRng::ScalarBackend> *devStates,
   KernelMRG32k3a<<<blocksPerGrid, threadsPerBlock>>>(devStates,result,nsample);
 }
 
-void CudaThreefry(vecRng::Threefry_t<vecRng::ScalarBackend> *devStates,
+void CudaThreefry(vecRng::Threefry<vecRng::ScalarBackend>::State_t *devStates,
 		  double *result,
  		  int nsample,
                   int blocksPerGrid, 
@@ -170,11 +170,11 @@ void CudaThreefry(vecRng::Threefry_t<vecRng::ScalarBackend> *devStates,
    KernelThreefry<<<blocksPerGrid, threadsPerBlock>>>(devStates,result,nsample);
 }
 
-void CudaPhilox(vecRng::Philox_t<vecRng::ScalarBackend> *devStates,
-		  double *result,
- 		  int nsample,
-                  int blocksPerGrid, 
-		  int threadsPerBlock) 
+void CudaPhilox(vecRng::Philox<vecRng::ScalarBackend>::State_t *devStates,
+		double *result,
+ 		int nsample,
+                int blocksPerGrid, 
+		int threadsPerBlock) 
 {
    KernelPhilox<<<blocksPerGrid, threadsPerBlock>>>(devStates,result,nsample);
 }

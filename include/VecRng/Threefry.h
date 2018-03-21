@@ -44,20 +44,30 @@
 namespace vecRng {
 inline namespace VECRNG_IMPL_NAMESPACE {
 
-// struct Threefry_t (random state of Threefry-4x32-20)
+template <typename BackendT> class Threefry;
+
+// struct Threefry (random state of Threefry-4x32-20)
 
 template <typename BackendT>
-struct Threefry_t {
-  unsigned int index;
-  R123::array_t<BackendT,4> ctr;
-  R123::array_t<BackendT,4> key;
-  R123::array_t<BackendT,4> ukey;
+struct RNG_traits<Threefry<BackendT> > {
+  struct State {
+    unsigned int index;
+    R123::array_t<BackendT,4> ctr;
+    R123::array_t<BackendT,4> key;
+    R123::array_t<BackendT,4> ukey;
+  };
+  using State_t = State;
 }; 
 
 //class Threefry<BackendT>
 
 template <typename BackendT>
-class Threefry : public VecRNG<Threefry<BackendT>, BackendT, Threefry_t<BackendT> > {
+class Threefry : public VecRNG<Threefry<BackendT> > {
+
+public:
+  using State_t = typename RNG_traits<Threefry<BackendT> >::State_t;
+  using State_s = typename RNG_traits<Threefry<ScalarBackend> >::State_t;
+  using State_v = typename RNG_traits<Threefry<VectorBackend> >::State_t;
 
 private:
   static long long fSeed;
@@ -68,7 +78,7 @@ public:
   Threefry() {} 
 
   VECCORE_ATT_HOST_DEVICE
-  Threefry(Threefry_t<BackendT> *states) : VecRNG<Threefry<BackendT>, BackendT, Threefry_t<BackendT> >(states) {}
+  Threefry(State_t *states) : VecRNG<Threefry<BackendT> >(states) {}
 
   VECCORE_ATT_HOST_DEVICE
   ~Threefry() {}
@@ -90,11 +100,13 @@ public:
   //Initialize a set of states of which size is nthreads
   VECCORE_ATT_HOST
   VECCORE_FORCE_INLINE
-  void Initialize(Threefry_t<BackendT> *states, unsigned int nthreads);
+  void Initialize(State_t *states, unsigned int nthreads);
 
   // Returns pRNG<BackendT> between 0 and 1 (excluding the end points).
   template <typename ReturnTypeBackendT>
-  inline VECCORE_ATT_HOST_DEVICE typename ReturnTypeBackendT::Double_v Kernel(Threefry_t<BackendT>& state);
+  VECCORE_ATT_HOST_DEVICE 
+  VECCORE_FORCE_INLINE
+  typename ReturnTypeBackendT::Double_v Kernel(State_t& state);
 
   // Auxiliary methods
   
@@ -110,33 +122,38 @@ public:
 
 private:
   // the mother is friend of this
-  friend class VecRNG<Threefry<BackendT>, BackendT, Threefry_t<BackendT> >;
+  friend class VecRNG<Threefry<BackendT> >;
 
   // Set the stream to the next stream/substream.
   VECCORE_ATT_HOST 
-  inline void SetNextStream (Threefry_t<BackendT> *state);
+  VECCORE_FORCE_INLINE 
+  void SetNextStream (State_t *state);
 
   VECCORE_ATT_HOST 
-  inline void SetNextSubstream ();
+  VECCORE_FORCE_INLINE 
+  void SetNextSubstream ();
 
   // Increase counter
   VECCORE_ATT_HOST_DEVICE 
-  inline void IncreaseCounter(Threefry_t<BackendT> *state);
+  VECCORE_FORCE_INLINE
+  void IncreaseCounter(State_t *state);
 
   // Threefry utility methods
   VECCORE_ATT_HOST_DEVICE
-  inline  typename BackendT::UInt32_v RotL_32(typename BackendT::UInt32_v x, unsigned int N);
+  VECCORE_FORCE_INLINE
+  typename BackendT::UInt32_v RotL_32(typename BackendT::UInt32_v x, unsigned int N);
 
   VECCORE_ATT_HOST_DEVICE
-  inline  typename BackendT::UInt64_v RotL_64(typename BackendT::UInt64_v x, unsigned int N);
+  VECCORE_FORCE_INLINE
+  typename BackendT::UInt64_v RotL_64(typename BackendT::UInt64_v x, unsigned int N);
 
   VECCORE_ATT_HOST_DEVICE
   void BijectAndShuffle(R123::array_t<BackendT,4> X, R123::array_t<BackendT,5> ks, 
                         unsigned int start, unsigned int index);
 
   VECCORE_ATT_HOST_DEVICE 
-  void Gen(R123::array_t<BackendT,4> in, R123::array_t<BackendT,4> k, R123::array_t<BackendT,4> X);
-
+  void Gen(R123::array_t<BackendT,4> in, R123::array_t<BackendT,4> k, 
+           R123::array_t<BackendT,4> X);
 };
 
 // The default seed of Threefry
@@ -150,7 +167,7 @@ template <class BackendT> long long Threefry<BackendT>::fSeed = 12345;
 template <typename BackendT>
 VECCORE_ATT_HOST_DEVICE
 Threefry<BackendT>::Threefry(const Threefry<BackendT> &rng) 
-  : VecRNG<Threefry<BackendT>, BackendT, Threefry_t<BackendT> >()
+  : VecRNG<Threefry<BackendT> >()
 {
   this->fState->index = rng.fState->index;
 
@@ -164,7 +181,7 @@ Threefry<BackendT>::Threefry(const Threefry<BackendT> &rng)
 
 // Set a new set of keys for the vector of next streams using the unique seed
 template <typename BackendT>
-VECCORE_ATT_HOST inline void Threefry<BackendT>::SetNextStream (Threefry_t<BackendT>  *state)
+VECCORE_ATT_HOST inline void Threefry<BackendT>::SetNextStream (State_t  *state)
 {
   for(size_t i = 0 ; i < VectorSize<UInt32_v>() ; ++i) { 
     for(size_t j = 0 ; j < 4 ; ++j) state->ctr[j][i] = 0;
@@ -176,7 +193,7 @@ VECCORE_ATT_HOST inline void Threefry<BackendT>::SetNextStream (Threefry_t<Backe
 
 // Scalar Specialization of SetNextStream
 template <>
-VECCORE_ATT_HOST inline void Threefry<ScalarBackend>::SetNextStream (Threefry_t<ScalarBackend> *state)
+VECCORE_ATT_HOST inline void Threefry<ScalarBackend>::SetNextStream (State_s *state)
 {
   for(size_t i = 0 ; i < 4 ; ++i) state->ctr[i] = 0;
   state->key[0] = (unsigned int)(fSeed);
@@ -265,11 +282,11 @@ void Threefry<ScalarBackend>::Initialize(long streamId)
 template <>
 VECCORE_ATT_HOST
 VECCORE_FORCE_INLINE
-void Threefry<ScalarBackend>::Initialize(Threefry_t<ScalarBackend> *states, unsigned int nthreads)
+void Threefry<ScalarBackend>::Initialize(State_s *states, unsigned int nthreads)
 {
   
-  Threefry_t<ScalarBackend>* hstates 
-    = (Threefry_t<ScalarBackend> *) malloc (nthreads*sizeof(Threefry_t<ScalarBackend>));
+  State_s* hstates 
+    = (State_s *) malloc (nthreads*sizeof(State_s));
 
   for (unsigned int tid = 0 ; tid < nthreads ; ++tid) {
     //initialize initial seed/state by the unique tid number
@@ -280,16 +297,16 @@ void Threefry<ScalarBackend>::Initialize(Threefry_t<ScalarBackend> *states, unsi
   }
 
 #ifdef VECCORE_CUDA
-  cudaMemcpy(states, hstates, nthreads*sizeof(Threefry_t<ScalarBackend>), cudaMemcpyHostToDevice);
+  cudaMemcpy(states, hstates, nthreads*sizeof(State_s), cudaMemcpyHostToDevice);
 #else
-  memcpy(states, hstates, nthreads*sizeof(Threefry_t<ScalarBackend>));
+  memcpy(states, hstates, nthreads*sizeof(State_s));
 #endif
   free(hstates);
 }
 
 // Increase counter of each element of the counter (ctr) vector
 template <typename BackendT>
-inline VECCORE_ATT_HOST void Threefry<BackendT>::IncreaseCounter(Threefry_t<BackendT> *state)
+inline VECCORE_ATT_HOST void Threefry<BackendT>::IncreaseCounter(State_t *state)
 {
   size_t vsize = VectorSize<UInt32_v>();
   for(size_t iv = 0 ; iv < vsize ; ++iv) {
@@ -302,7 +319,7 @@ inline VECCORE_ATT_HOST void Threefry<BackendT>::IncreaseCounter(Threefry_t<Back
 
 // Increase counter of each element of the counter (ctr) vector
 template <>
-inline VECCORE_ATT_HOST void Threefry<ScalarBackend>::IncreaseCounter(Threefry_t<ScalarBackend> *state)
+inline VECCORE_ATT_HOST void Threefry<ScalarBackend>::IncreaseCounter(State_s *state)
 {
   if( ++state->ctr[0]) return;
   if( ++state->ctr[1]) return;
@@ -339,7 +356,8 @@ VECCORE_ATT_HOST void Threefry<BackendT>::AdvanceState(long long n)
 
 template <>
 VECCORE_FORCE_INLINE
-VECCORE_ATT_HOST void Threefry<ScalarBackend>::AdvanceState(long long n)
+VECCORE_ATT_HOST 
+void Threefry<ScalarBackend>::AdvanceState(long long n)
 {
   unsigned int nlo = (unsigned int)(n);
   unsigned int nhi = (unsigned int)(n>>32);
@@ -355,7 +373,8 @@ VECCORE_ATT_HOST void Threefry<ScalarBackend>::AdvanceState(long long n)
 // Kernel to generate a vector(scalar) of next random number(s) 
 template <class BackendT>
 template <class ReturnTypeBackendT>
-VECCORE_ATT_HOST_DEVICE typename ReturnTypeBackendT::Double_v Threefry<BackendT>::Kernel(Threefry_t<BackendT>& state)
+VECCORE_ATT_HOST_DEVICE 
+typename ReturnTypeBackendT::Double_v Threefry<BackendT>::Kernel(State_t& state)
 {
 
   using Double_v = typename ReturnTypeBackendT::Double_v;
@@ -386,7 +405,7 @@ template <>
 template <>
 VECCORE_FORCE_INLINE
 VECCORE_ATT_HOST_DEVICE ScalarBackend::Double_v 
-Threefry<VectorBackend>::Kernel<ScalarBackend>(Threefry_t<VectorBackend>& state)
+Threefry<VectorBackend>::Kernel<ScalarBackend>(State_v& state)
 {
   return Kernel<VectorBackend>(state)[0]; 
 }
@@ -394,23 +413,26 @@ Threefry<VectorBackend>::Kernel<ScalarBackend>(Threefry_t<VectorBackend>& state)
 
 // Threefry utility methods
 template <class BackendT>
-inline VECCORE_ATT_HOST_DEVICE typename BackendT::UInt32_v 
+VECCORE_FORCE_INLINE
+VECCORE_ATT_HOST_DEVICE typename BackendT::UInt32_v 
 Threefry<BackendT>::RotL_32(typename BackendT::UInt32_v x, unsigned int N)
 {
   return (x << (N & 31)) | (x >> ((32-N) & 31));
 }
 
 template <class BackendT>
-inline VECCORE_ATT_HOST_DEVICE typename BackendT::UInt64_v 
+VECCORE_FORCE_INLINE
+VECCORE_ATT_HOST_DEVICE typename BackendT::UInt64_v 
 Threefry<BackendT>::RotL_64(typename BackendT::UInt64_v x, unsigned int N)
 {
   return (x << (N & 63)) | (x >> ((64-N) & 63));
 }
 
 template <class BackendT>
-VECCORE_ATT_HOST_DEVICE void 
-Threefry<BackendT>::BijectAndShuffle(R123::array_t<BackendT,4> X, R123::array_t<BackendT,5> key, 
-                                     unsigned int start, unsigned int index) 
+VECCORE_ATT_HOST_DEVICE 
+void Threefry<BackendT>::BijectAndShuffle(R123::array_t<BackendT,4> X, 
+                                          R123::array_t<BackendT,5> key, 
+                                          unsigned int start, unsigned int index) 
 {
   X[0] += X[1]; X[1] = RotL_32(X[1],R123::R_32x4[start+0][0]); X[1] ^= X[0];
   X[2] += X[3]; X[3] = RotL_32(X[3],R123::R_32x4[start+0][1]); X[3] ^= X[2];
@@ -433,8 +455,10 @@ Threefry<BackendT>::BijectAndShuffle(R123::array_t<BackendT,4> X, R123::array_t<
 }  
 
 template <class BackendT>
-VECCORE_ATT_HOST_DEVICE void Threefry<BackendT>::Gen(R123::array_t<BackendT,4> in, R123::array_t<BackendT,4> k, 
-						       R123::array_t<BackendT,4> X)
+VECCORE_ATT_HOST_DEVICE 
+void Threefry<BackendT>::Gen(R123::array_t<BackendT,4> in, 
+                             R123::array_t<BackendT,4> k, 
+			     R123::array_t<BackendT,4> X)
 {
   using UInt32_v = typename BackendT::UInt32_v;                              
 

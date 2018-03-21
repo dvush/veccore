@@ -175,8 +175,8 @@ double StateMRG32k3a(int nsample, double& result)
   int theNBlocks = 26;
   int theNThreads = 192;
 
-  vecRng::MRG32k3a_t<ScalarBackend>* hstates 
-    = (vecRng::MRG32k3a_t<ScalarBackend> *) malloc (theNBlocks*theNThreads*sizeof(vecRng::MRG32k3a_t<ScalarBackend>));
+  vecRng::MRG32k3a<ScalarBackend>::State_t* hstates 
+    = (vecRng::MRG32k3a<ScalarBackend>::State_t *) malloc (theNBlocks*theNThreads*sizeof(vecRng::MRG32k3a<ScalarBackend>::State_t));
   rng.Initialize(hstates,theNBlocks*theNThreads);
 
   static Timer<nanoseconds> timer;
@@ -206,8 +206,8 @@ double StateThreefry(int nsample, double& result)
   int theNBlocks = 26;
   int theNThreads = 192;
 
-  vecRng::Threefry_t<ScalarBackend>* hstates 
-    = (vecRng::Threefry_t<ScalarBackend> *) malloc (theNBlocks*theNThreads*sizeof(vecRng::Threefry_t<ScalarBackend>));
+  vecRng::Threefry<ScalarBackend>::State_t* hstates 
+    = (vecRng::Threefry<ScalarBackend>::State_t *) malloc (theNBlocks*theNThreads*sizeof(vecRng::Threefry<ScalarBackend>::State_t));
   rng.Initialize(hstates,theNBlocks*theNThreads);
 
   static Timer<nanoseconds> timer;
@@ -238,8 +238,8 @@ double StatePhilox(int nsample, double& result)
   int theNBlocks = 26;
   int theNThreads = 192;
 
-  vecRng::Philox_t<ScalarBackend>* hstates
-    = (vecRng::Philox_t<ScalarBackend> *) malloc (theNBlocks*theNThreads*sizeof(vecRng::Philox_t<ScalarBackend>));
+  vecRng::Philox<ScalarBackend>::State_t* hstates
+    = (vecRng::Philox<ScalarBackend>::State_t *) malloc (theNBlocks*theNThreads*sizeof(vecRng::Philox<ScalarBackend>::State_t));
   rng.Initialize(hstates,theNBlocks*theNThreads);
 
   static Timer<nanoseconds> timer;

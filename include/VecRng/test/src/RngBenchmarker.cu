@@ -37,20 +37,20 @@ void RngBenchmarker::RunCuda()
   //1. MRG32k3a:
 
   vecRng::MRG32k3a<vecRng::ScalarBackend> *mrg32k2a = new vecRng::MRG32k3a<vecRng::ScalarBackend>();
-  vecRng::MRG32k3a_t<vecRng::ScalarBackend>* statesMRG32k3a_d = 0; 
-  cudaMalloc((void**)&statesMRG32k3a_d, theNBlocks*theNThreads*sizeof(vecRng::MRG32k3a_t<vecRng::ScalarBackend>));
+  vecRng::MRG32k3a<vecRng::ScalarBackend>::State_t* statesMRG32k3a_d = 0; 
+  cudaMalloc((void**)&statesMRG32k3a_d, theNBlocks*theNThreads*sizeof(vecRng::MRG32k3a<vecRng::ScalarBackend>::State_t));
   mrg32k2a->Initialize(statesMRG32k3a_d, theNBlocks*theNThreads);
 
   //2. Threefry:
   vecRng::Threefry<vecRng::ScalarBackend> *threefry = new vecRng::Threefry<vecRng::ScalarBackend>();
-  vecRng::Threefry_t<vecRng::ScalarBackend>* statesThreefry_d = 0; 
-  cudaMalloc((void**)&statesThreefry_d, theNBlocks*theNThreads*sizeof(vecRng::Threefry_t<vecRng::ScalarBackend>));
+  vecRng::Threefry<vecRng::ScalarBackend>::State_t* statesThreefry_d = 0; 
+  cudaMalloc((void**)&statesThreefry_d, theNBlocks*theNThreads*sizeof(vecRng::Threefry<vecRng::ScalarBackend>::State_t));
   threefry->Initialize(statesThreefry_d, theNBlocks*theNThreads);
 
   //Philox:
   vecRng::Philox<vecRng::ScalarBackend> *philox = new vecRng::Philox<vecRng::ScalarBackend>();
-  vecRng::Philox_t<vecRng::ScalarBackend>* statesPhilox_d = 0; 
-  cudaMalloc((void**)&statesPhilox_d, theNBlocks*theNThreads*sizeof(vecRng::Philox_t<vecRng::ScalarBackend>));
+  vecRng::Philox<vecRng::ScalarBackend>::State_t* statesPhilox_d = 0; 
+  cudaMalloc((void**)&statesPhilox_d, theNBlocks*theNThreads*sizeof(vecRng::Philox<vecRng::ScalarBackend>::State_t));
   philox->Initialize(statesPhilox_d, theNBlocks*theNThreads);
 
   //4 curandStateMRG32k3a

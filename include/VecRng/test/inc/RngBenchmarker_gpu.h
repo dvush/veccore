@@ -10,13 +10,13 @@
 namespace vecrng {
 
   // Cuda Wrapper
-  void CudaMRG32k3a(vecRng::MRG32k3a_t<vecRng::ScalarBackend> *devStates, double *result, 
+  void CudaMRG32k3a(vecRng::MRG32k3a<vecRng::ScalarBackend>::State_t *devStates, double *result, 
 		    int nsample, int blocksPerGrid, int threadsPerBlock);
 
-  void CudaThreefry(vecRng::Threefry_t<vecRng::ScalarBackend> *devStates, double *result, 
+  void CudaThreefry(vecRng::Threefry<vecRng::ScalarBackend>::State_t *devStates, double *result, 
 		    int nsample, int blocksPerGrid, int threadsPerBlock);
 
-  void CudaPhilox(vecRng::Philox_t<vecRng::ScalarBackend> *devStates, double *result, 
+  void CudaPhilox(vecRng::Philox<vecRng::ScalarBackend>::State_t *devStates, double *result, 
 		  int nsample, int blocksPerGrid, int threadsPerBlock);
 
   // Curand Test 

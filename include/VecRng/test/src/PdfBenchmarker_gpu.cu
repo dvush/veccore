@@ -19,7 +19,7 @@ const int THREADS_PER_BLOCK = 256;
 } 
 
 __global__
-void KernelMRG32k3aGauss(vecRng::MRG32k3a_t<vecRng::ScalarBackend>* devStates, double *result, int nsample) 
+void KernelMRG32k3aGauss(vecRng::MRG32k3a<vecRng::ScalarBackend>::State_t* devStates, double *result, int nsample) 
 {
   unsigned int tid = threadIdx.x + blockIdx.x * blockDim.x;
   unsigned int sid = threadIdx.x;
@@ -76,7 +76,7 @@ void curand_setup_kernel_gauss(curandStateMRG32k3a *devStates, unsigned long see
 
 // Cuda wrapper
 
-void CudaMRG32k3aGauss(vecRng::MRG32k3a_t<vecRng::ScalarBackend> *devStates,
+  void CudaMRG32k3aGauss(vecRng::MRG32k3a<vecRng::ScalarBackend>::State_t *devStates,
 		  double *result,
  		  int nsample,
                   int blocksPerGrid, 
