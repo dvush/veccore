@@ -4,11 +4,12 @@
  */
 
 // Gaussian deviates with a state
-template <typename DerivedT, typename BackendT, typename RandomT>
+template <typename DerivedT>
 template <typename ReturnTypeBackendT>
 VECCORE_ATT_HOST_DEVICE typename ReturnTypeBackendT::Double_v
-VecRNG<DerivedT, BackendT, RandomT>::Gauss(RandomT *state, typename ReturnTypeBackendT::Double_v mean,
-                                           typename ReturnTypeBackendT::Double_v sigma)
+VecRNG<DerivedT>::Gauss(State_t *state, 
+                        typename ReturnTypeBackendT::Double_v mean,
+                        typename ReturnTypeBackendT::Double_v sigma)
 {
   // Gauss with a state
   using Double_v = typename ReturnTypeBackendT::Double_v;
@@ -20,11 +21,11 @@ VecRNG<DerivedT, BackendT, RandomT>::Gauss(RandomT *state, typename ReturnTypeBa
 }
 
 // Gaussian deviates with (mean, sigma):  1/(2*pi*sigma^2)*exp[-(x-mean)^2/sigma^2]
-template <typename DerivedT, typename BackendT, typename RandomT>
+template <typename DerivedT>
 template <typename ReturnTypeBackendT>
 VECCORE_ATT_HOST_DEVICE typename ReturnTypeBackendT::Double_v
-VecRNG<DerivedT, BackendT, RandomT>::Gauss(typename ReturnTypeBackendT::Double_v mean,
-                                           typename ReturnTypeBackendT::Double_v sigma)
+VecRNG<DerivedT>::Gauss(typename ReturnTypeBackendT::Double_v mean,
+                        typename ReturnTypeBackendT::Double_v sigma)
 {
   // Using Box/Muller - use just one
   // normal1 = sqrt(-2*log(u1))*cos(2*pi*u2)
