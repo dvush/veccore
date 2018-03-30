@@ -17,9 +17,7 @@ namespace R123 {
 
   //typedef
 
-  template<typename ReturnTypeBackendT> using array2_t = typename ReturnTypeBackendT::UInt32_v [2];
-  template<typename ReturnTypeBackendT> using array4_t = typename ReturnTypeBackendT::UInt32_v [4];
-  template<typename ReturnTypeBackendT, unsigned int N> using array_t = typename ReturnTypeBackendT::UInt32_v [N];
+  template<typename BackendT, unsigned int N> using array_t = typename BackendT::UInt32_v [N];
 
   //Threefry parameters 
 
