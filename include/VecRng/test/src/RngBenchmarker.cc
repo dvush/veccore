@@ -19,6 +19,8 @@ int RngBenchmarker::RunBenchmark()
   printf(" Run RngBenchmarker with arguments: %d %d\n", fNSample, fRepetition);
   printf(" NSample              = %d\n", fNSample);
   printf(" NRepetitions         = %d\n", fRepetition);
+  printf(" VectorSize<UInt32_v> = %lu\n", VectorSize<UInt32_v>());
+  printf(" VectorSize<UInt64_v> = %lu\n", VectorSize<UInt64_v>());
   printf(" VectorSize<Double_v> = %lu\n", VectorSize<Double_v>());
 
   int errorcode = 0;
