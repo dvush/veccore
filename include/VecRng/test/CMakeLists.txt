@@ -32,7 +32,7 @@ include(MacroUtilities)
 
 option(RNGTEST_CUDA "Enable compilation for CUDA." OFF)
 
-set(RNGTEST_ARCH native sse2 sse3 ssse3 sse4.1 sse4.2 avx avx2 mic mic_avx512)
+set(RNGTEST_ARCH native sse2 ssse3 sse4.1 sse4.2 aes avx avx2 mic mic_avx512)
 
 enum_option(RNGTEST_VECTOR
       DOC "Vector instruction set to be used"
