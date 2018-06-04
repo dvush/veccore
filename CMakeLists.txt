@@ -44,7 +44,7 @@ if (VC)
   # Vc does not come with an imported target, add our own
   if(NOT TARGET Vc::Vc)
     add_library(Vc::Vc INTERFACE IMPORTED)
-    set_property(TARGET Vc::Vc PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${Vc_INCLUDE_DIRS})
+    set_property(TARGET Vc::Vc PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${Vc_INCLUDE_DIR})
     set_property(TARGET Vc::Vc PROPERTY INTERFACE_LINK_LIBRARIES ${Vc_LIBRARIES})
   endif()
 
