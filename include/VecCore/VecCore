@@ -22,6 +22,8 @@
 #include "Backend/UMESimdArray.h"
 #endif
 
+#include "Backend/AgnerVectorclass.h"
+
 #include "Limits.h"
 #include "VecMath.h"
 #include "Utilities.h"
