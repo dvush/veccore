@@ -332,6 +332,11 @@ int main(int argc, char *argv[])
   TestQuadSolve<backend::UMESimdArray<16>>(a, b, c, x1, x2, roots, kN, "UME::SIMD<16>");
   TestQuadSolve<backend::UMESimdArray<32>>(a, b, c, x1, x2, roots, kN, "UME::SIMD<32>");
 #endif
+
+#ifdef VECCORE_ENABLE_AGNER
+  TestQuadSolve<backend::AgnerAVX>(a, b, c, x1, x2, roots, kN, "AgnerAVX");
+  TestQuadSolve<backend::AgnerAVX512>(a, b, c, x1, x2, roots, kN, "AgnerAVX512");
+#endif
   printf("------------------------------------------\n");
 
   AlignedFree(a);

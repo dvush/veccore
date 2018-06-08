@@ -220,6 +220,13 @@ int main(int argc, char *argv[])
                                               max_iter, image, "float_umesimd");
 #endif
 
+#ifdef VECCORE_ENABLE_AGNER
+    bench_newton_v<backend::AgnerAVX::Float_v>(
+        xmin, xmax, nx, ymin, ymax, ny, max_iter, image, "float_agnerAVX");
+    bench_newton_v<backend::AgnerAVX512::Float_v>(
+        xmin, xmax, nx, ymin, ymax, ny, max_iter, image, "float_agnerAVX512");
+#endif
+
     /* double precision */
 
     bench_newton<double>(xmin, xmax, nx, ymin, ymax, ny,
@@ -236,6 +243,13 @@ int main(int argc, char *argv[])
 #ifdef VECCORE_ENABLE_UMESIMD
     bench_newton_v<backend::UMESimd::Double_v>(xmin, xmax, nx, ymin, ymax, ny,
                                                max_iter, image, "double_umesimd");
+#endif
+
+#ifdef VECCORE_ENABLE_AGNER
+    bench_newton_v<backend::AgnerAVX::Double_v>(
+        xmin, xmax, nx, ymin, ymax, ny, max_iter, image, "double_agnerAVX");
+    bench_newton_v<backend::AgnerAVX512::Double_v>(
+        xmin, xmax, nx, ymin, ymax, ny, max_iter, image, "double_agnerAVX512");
 #endif
 
     return 0;

@@ -133,6 +133,15 @@ int main(int argc, char *argv[])
                                              max_iter, image, "float_umesimd", cr, ci);
 #endif
 
+#ifdef VECCORE_ENABLE_AGNER
+    bench_julia_v<backend::AgnerAVX::Float_v>(xmin, xmax, nx, ymin, ymax, ny,
+                                              max_iter, image, "float_agnerAVX",
+                                              cr, ci);
+    bench_julia_v<backend::AgnerAVX512::Float_v>(xmin, xmax, nx, ymin, ymax, ny,
+                                                 max_iter, image,
+                                                 "float_agnerAVX512", cr, ci);
+#endif
+
     /* double precision */
 
     bench_julia<double>(xmin, xmax, nx, ymin, ymax, ny,
@@ -149,6 +158,15 @@ int main(int argc, char *argv[])
 #ifdef VECCORE_ENABLE_UMESIMD
     bench_julia_v<backend::UMESimd::Double_v>(xmin, xmax, nx, ymin, ymax, ny,
                                                    max_iter, image, "double_umesimd", cr, ci);
+#endif
+
+#ifdef VECCORE_ENABLE_AGNER
+    bench_julia_v<backend::AgnerAVX::Double_v>(xmin, xmax, nx, ymin, ymax, ny,
+                                               max_iter, image,
+                                               "double_agnerAVX", cr, ci);
+    bench_julia_v<backend::AgnerAVX512::Double_v>(xmin, xmax, nx, ymin, ymax,
+                                                  ny, max_iter, image,
+                                                  "double_agnerAVX512", cr, ci);
 #endif
     return 0;
 }
