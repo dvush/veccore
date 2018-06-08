@@ -138,6 +138,11 @@ TEST_BACKEND(VcVector);
 TEST_BACKEND_P(VcSimdArray, VcSimdArray<16>);
 #endif
 
+#ifdef VECCORE_ENABLE_AGNER
+TEST_BACKEND(AgnerAVX);
+TEST_BACKEND(AgnerAVX512);
+#endif
+
 #else // if !GTEST_HAS_TYPED_TEST
 TEST(DummyTest, TypedTestsAreNotSupportedOnThisPlatform)
 {

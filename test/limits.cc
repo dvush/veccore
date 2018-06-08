@@ -68,5 +68,11 @@ int main(int argc, char *argv[])
   Test<backend::VcSimdArray<16>>("VcSimdArray");
 #endif
 
+#ifdef VECCORE_ENABLE_AGNER
+  Test<backend::AgnerAVX>("AgnerAVX");
+  Test<backend::AgnerAVX512>("AgnerAVX512");
+#endif
+
+
   return 0;
 }

@@ -33,6 +33,30 @@ using UMESimdTypes = Types
     typename Backend::UInt64_v
   >;
 
+template<class Backend>
+using AgnerAVXTypes = Types
+  <
+    typename Backend::Float_v,
+    typename Backend::Double_v,
+    typename Backend::Int16_v,
+    typename Backend::UInt16_v,
+    typename Backend::Int32_v,
+    typename Backend::UInt32_v,
+    typename Backend::Int64_v,
+    typename Backend::UInt64_v
+  >;
+
+template<class Backend>
+using AgnerAVX512Types = Types
+  <
+    typename Backend::Float_v,
+    typename Backend::Double_v,
+    typename Backend::Int32_v,
+    typename Backend::UInt32_v,
+    typename Backend::Int64_v,
+    typename Backend::UInt64_v
+  >;
+
 template<class T>
 class AlignmentTest : public Test {
 public:
@@ -117,6 +141,11 @@ TEST_BACKEND_P(VcSimdArray, VcTypes, VcSimdArray<16>);
 #if 0 && defined(VECCORE_ENABLE_UMESIMD)
 TEST_BACKEND_P(UMESimd, UMESimdTypes, UMESimd);
 TEST_BACKEND_P(UMESimdArray, UMESimdTypes, UMESimdArray<16>);
+#endif
+
+#if defined(VECCORE_ENABLE_AGNER)
+TEST_BACKEND_P(AgnerAVX, AgnerAVXTypes, AgnerAVX);
+TEST_BACKEND_P(AgnerAVX512, AgnerAVX512Types, AgnerAVX512);
 #endif
 
 int main(int argc, char *argv[])
